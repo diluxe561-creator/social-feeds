@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mini Social Feed</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+
+<h2>Social Feed</h2>
+
+<form id="postForm">
+  <input id="text" placeholder="Write something..." required>
+  <button>Post</button>
+</form>
+
+<div id="feed"></div>
+
+<script>
+async function load() {
+  let r = await fetch("/posts");
+  let data = await r.json();
+  feed.innerHTML = data.map(p =>
+    `<div class="card">
+      ${p.content}
+      <button onclick="like(${p.id})">❤️ ${p.likes}</button>
+    </div>`
+  ).join("");
+}
+
+async function like(id){
+  await fetch("/like/"+id,{method:"POST"});
+  load();
+}
+
+postForm.onsubmit = async e=>{
+  e.preventDefault();
+  await fetch("/post",{
+    method:"POST",
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({content:text.value})
+  });
+  text.value="";
+  load();
+}
+
+setInterval(load,2000);
+load();
+</script>
+
+</body>
+</html>
